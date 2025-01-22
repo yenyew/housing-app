@@ -21,31 +21,28 @@ def user_input_features():
     floors = st.sidebar.slider('Number of Floors', 1, 4, 1)
     
     st.sidebar.subheader("Property Features")
-    mainroad = st.sidebar.selectbox('Main Road (1: Yes, 0: No)', ['yes', 'no'])
-    guestroom = st.sidebar.selectbox('Guestroom (1: Yes, 0: No)', ['yes', 'no'])
-    basement = st.sidebar.selectbox('Basement (1: Yes, 0: No)', ['yes', 'no'])
+    mainroad = st.sidebar.selectbox('Main Road', ['yes', 'no'])
+    guestroom = st.sidebar.selectbox('Guestroom', ['yes', 'no'])
+    basement = st.sidebar.selectbox('Basement', ['yes', 'no'])
     parking = st.sidebar.slider('Parking Spaces (0-4)', 0, 4, 2)
-    airconditioning = st.sidebar.selectbox('Air Conditioning (1: Yes, 0: No)', ['yes', 'no'])
-    furnishingstatus = st.sidebar.selectbox(
-        'Furnishing Status', 
-        ['furnished', 'semi-furnished', 'unfurnished']
-    )
+    airconditioning = st.sidebar.selectbox('Air Conditioning', ['yes', 'no'])
+    furnishingstatus = st.sidebar.selectbox('Furnishing Status', ['furnished', 'semi-furnished', 'unfurnished'])
     
     st.sidebar.subheader("Location Preferences")
-    prefarea = st.sidebar.selectbox('Preferred Area (1: Yes, 0: No)', ['yes', 'no'])
+    prefarea = st.sidebar.selectbox('Preferred Area', ['yes', 'no'])
 
     data = {
-        'area': area,
-        'bedrooms': bedrooms,
-        'bathrooms': bathrooms,
-        'floors': floors,
-        'mainroad': mainroad,
-        'guestroom': guestroom,
-        'basement': basement,
-        'parking': parking,
-        'airconditioning': airconditioning,
-        'furnishingstatus': furnishingstatus,
-        'prefarea': prefarea
+        'Area (sq ft)': area,
+        'Bedrooms': bedrooms,
+        'Bathrooms': bathrooms,
+        'Floors': floors,
+        'Main Road': 'Yes' if mainroad == 'yes' else 'No',
+        'Guestroom': 'Yes' if guestroom == 'yes' else 'No',
+        'Basement': 'Yes' if basement == 'yes' else 'No',
+        'Parking Spaces': parking,
+        'Air Conditioning': 'Yes' if airconditioning == 'yes' else 'No',
+        'Furnishing Status': furnishingstatus.capitalize(),
+        'Preferred Area': 'Yes' if prefarea == 'yes' else 'No'
     }
     features = pd.DataFrame(data, index=[0])
     return features
@@ -53,9 +50,10 @@ def user_input_features():
 # Get user input features
 df_input = user_input_features()
 
-# Display user inputs
+# Display user inputs in a more readable format
 st.subheader('Entered Property Details')
-st.write(df_input)
+st.write("Here is the information you entered:")
+st.table(df_input)
 
 # Load and preprocess data with caching for resources
 @st.cache_resource
@@ -93,7 +91,7 @@ gbr, trained_columns, X_train, X_test, y_train, y_test = load_and_preprocess_dat
 # Preprocess the user input data in the same way as the training data
 df_input_encoded = pd.get_dummies(
     df_input, 
-    columns=["mainroad", "guestroom", "basement", "airconditioning", "prefarea", "furnishingstatus"]
+    columns=["Main Road", "Guestroom", "Basement", "Air Conditioning", "Preferred Area", "Furnishing Status"]
 )
 
 # Ensure the user input data has the same columns as the trained model
