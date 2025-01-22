@@ -55,8 +55,7 @@ st.subheader('Entered Property Details')
 st.write("Here is the information you entered:")
 st.table(df_input)
 
-# Load and preprocess data with caching for resources
-@st.cache_resource
+# Load and preprocess data without caching the model
 def load_and_preprocess_data():
     df = pd.read_csv('Housing.csv')  # Replace with your dataset path
     df = df.drop('hotwaterheating', axis=1)
