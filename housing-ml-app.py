@@ -23,7 +23,7 @@ def user_input_features():
     st.sidebar.subheader("Property Features")
     mainroad = st.sidebar.selectbox('Main Road (1: Yes, 0: No)', ['yes', 'no'])
     guestroom = st.sidebar.selectbox('Guestroom (1: Yes, 0: No)', ['yes', 'no'])
-    basement = st.sidebar.selectbox('Basement (1: Yes, 0: No)', ['yes', 'no'])
+    hotwaterheating = st.sidebar.selectbox('Hot Water Heating (1: Yes, 0: No)', ['yes', 'no'])
     parking = st.sidebar.slider('Parking Spaces (0-4)', 0, 4, 2)
     airconditioning = st.sidebar.selectbox('Air Conditioning (1: Yes, 0: No)', ['yes', 'no'])
     furnishingstatus = st.sidebar.selectbox(
@@ -41,7 +41,7 @@ def user_input_features():
         'floors': floors,
         'mainroad': mainroad,
         'guestroom': guestroom,
-        'basement': basement,
+        'hotwaterheating': hotwaterheating,
         'parking': parking,
         'airconditioning': airconditioning,
         'furnishingstatus': furnishingstatus,
@@ -61,12 +61,12 @@ st.write(df_input)
 @st.cache_resource
 def load_and_preprocess_data():
     df = pd.read_csv('Housing.csv')  # Replace with your dataset path
-    df = df.drop('hotwaterheating', axis=1)
+    df = df.drop('basement', axis=1)  # Drop 'basement' column
 
     # Encode categorical columns in the training set
     df_encoded = pd.get_dummies(
         df, 
-        columns=["mainroad", "guestroom", "basement", "airconditioning", "prefarea", "furnishingstatus"]
+        columns=["mainroad", "guestroom", "hotwaterheating", "airconditioning", "prefarea", "furnishingstatus"]
     )
 
     # Define the features (X) and target (y)
@@ -93,7 +93,7 @@ gbr, trained_columns, X_train, X_test, y_train, y_test = load_and_preprocess_dat
 # Preprocess the user input data in the same way as the training data
 df_input_encoded = pd.get_dummies(
     df_input, 
-    columns=["mainroad", "guestroom", "basement", "airconditioning", "prefarea", "furnishingstatus"]
+    columns=["mainroad", "guestroom", "hotwaterheating", "airconditioning", "prefarea", "furnishingstatus"]
 )
 
 # Ensure the user input data has the same columns as the trained model
