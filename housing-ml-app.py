@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import LinearRegression
 
 # Title of the app
 st.title("🏠 House Price Prediction App")
@@ -75,20 +75,14 @@ def load_and_preprocess_data():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
-    # Updated GradientBoostingRegressor with tuned hyperparameters
-    gbr = GradientBoostingRegressor(
-        n_estimators=1000,         # Increase number of trees
-        learning_rate=0.01,       # Decrease learning rate for finer optimization
-        max_depth=8,              # Increase depth for more complex patterns
-        min_samples_split=5,     # Avoid overfitting small splits
-        random_state=42           # For reproducibility
-    )
-    gbr.fit(X_train, y_train)
+    # Linear Regression model
+    lr = LinearRegression()
+    lr.fit(X_train, y_train)
 
-    return gbr, list(X_train.columns), X_train, X_test, y_train, y_test
+    return lr, list(X_train.columns), X_train, X_test, y_train, y_test
 
 # Load the model and data
-gbr, trained_columns, X_train, X_test, y_train, y_test = load_and_preprocess_data()
+lr, trained_columns, X_train, X_test, y_train, y_test = load_and_preprocess_data()
 
 # Preprocess the user input data in the same way as the training data
 df_input_encoded = pd.get_dummies(
@@ -108,7 +102,7 @@ df_input_encoded = df_input_encoded[trained_columns]
 # Prediction button
 if st.button('Predict Price'):
     # Make a prediction based on user input
-    prediction = gbr.predict(df_input_encoded)
+    prediction = lr.predict(df_input_encoded)
 
     # Display the prediction
     st.subheader('Predicted House Price')
@@ -119,7 +113,7 @@ if st.button('Predict Price'):
 
     # 1. Predicted vs Actual Prices Plot
     st.write("### Predicted vs Actual House Prices")
-    y_pred = gbr.predict(X_test)  # Predictions on the test set
+    y_pred = lr.predict(X_test)  # Predictions on the test set
 
     # Scatter plot for predicted vs actual prices
     plt.figure(figsize=(10, 6))
