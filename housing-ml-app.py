@@ -1,7 +1,8 @@
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-import joblib  # Import joblib to load the saved model
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import GradientBoostingRegressor
 
 # Title of the app
 st.title("🏠 House Price Prediction App")
@@ -56,21 +57,12 @@ df_input = user_input_features()
 st.subheader('Entered Property Details')
 st.write(df_input)
 
-# Load the pre-trained model and columns using joblib
-@st.cache_resource
-def load_model():
-    model = joblib.load('Gradient_Boosting_Regressor.pkl')  # Load the pre-trained model
-    return model
-
-# Load the model
-gbr = load_model()
-
-# Load and preprocess data for the columns to ensure they match
+# Load and preprocess data with caching for resources
 @st.cache_resource
 def load_and_preprocess_data():
     df = pd.read_csv('Housing.csv')  # Replace with your dataset path
     df = df.drop('hotwaterheating', axis=1)
-    
+
     # Encode categorical columns in the training set
     df_encoded = pd.get_dummies(
         df, 
@@ -79,10 +71,24 @@ def load_and_preprocess_data():
 
     # Define the features (X) and target (y)
     X = df_encoded.drop('price', axis=1)
-    return X.columns  # Return the columns for matching with user input
+    y = df_encoded['price']
 
-# Get the model's columns
-trained_columns = load_and_preprocess_data()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # Updated GradientBoostingRegressor with tuned hyperparameters
+    gbr = GradientBoostingRegressor(
+        n_estimators=1000,         # Increase number of trees
+        learning_rate=0.01,       # Decrease learning rate for finer optimization
+        max_depth=8,              # Increase depth for more complex patterns
+        min_samples_split=5,     # Avoid overfitting small splits
+        random_state=42           # For reproducibility
+    )
+    gbr.fit(X_train, y_train)
+
+    return gbr, list(X_train.columns), X_train, X_test, y_train, y_test
+
+# Load the model and data
+gbr, trained_columns, X_train, X_test, y_train, y_test = load_and_preprocess_data()
 
 # Preprocess the user input data in the same way as the training data
 df_input_encoded = pd.get_dummies(
@@ -113,12 +119,12 @@ if st.button('Predict Price'):
 
     # 1. Predicted vs Actual Prices Plot
     st.write("### Predicted vs Actual House Prices")
-    y_pred = gbr.predict(X)  # Predictions on the entire dataset
+    y_pred = gbr.predict(X_test)  # Predictions on the test set
 
     # Scatter plot for predicted vs actual prices
     plt.figure(figsize=(10, 6))
-    plt.scatter(df_encoded['price'], y_pred, alpha=0.6)
-    plt.plot([min(df_encoded['price']), max(df_encoded['price'])], [min(df_encoded['price']), max(df_encoded['price'])], color='red', linestyle='--')  # Line for perfect predictions
+    plt.scatter(y_test, y_pred, alpha=0.6)
+    plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')  # Line for perfect predictions
     plt.xlabel("Actual Price")
     plt.ylabel("Predicted Price")
     plt.title("Actual vs Predicted House Prices")
